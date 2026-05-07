@@ -1,0 +1,11 @@
+# --- Aprilcube Gitignore ---
+
+**.png
+**.stl
+**.3mf
+**.pdf
+
+# Exclude the original 8x8 px tag textures
+!meshes/tags_original/*.png
+# Image of the printed cube for the readme
+!print3D/printed.png

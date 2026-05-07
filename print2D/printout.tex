@@ -1,0 +1,79 @@
+\documentclass[a4paper]{article}
+\usepackage{
+    geometry,
+    graphicx,
+    tikz
+}
+
+% --- Graphicx Include Path ---
+% \graphicspath{{tags_original}} % in Overleaf
+\graphicspath{{../meshes/tags_original}} % locally
+% ---
+
+\newlength{\CubeSideLength}
+\setlength{\CubeSideLength}{5cm}
+\geometry{margin=1cm} % centers picture in the page
+
+\begin{document}
+\thispagestyle{empty}
+\begin{figure}[p]
+    \centering
+    \begin{tikzpicture}[
+        x=\CubeSideLength, 
+        y=\CubeSideLength,
+        fold/.style={gray!20!white,thin},
+        cut/.style={gray!20!white,thin,dashed},
+        % glue flap at the borders
+        flap/.pic={ 
+            \draw[cut] (-.5,.5) 
+                -- (-.3,.7)
+                -- ( .3,.7)
+                -- ( .5,.5)
+            ;
+            \node[cut] at (0,.6) {glue};
+        }
+    ]
+        \foreach \name/\x/\y in {
+            tag0_top/0/1,
+            tag1_front/0/0,
+            tag2_left/1/0,
+            tag3_right/-1/0,
+            tag4_back/0/-2,
+            tag5_bottom/0/-1
+        }
+        \node[inner sep=0] at (\x,\y) {
+            \includegraphics[width=\CubeSideLength]{\name.png}
+        };
+
+        % --- Fold Lines ---
+        \draw[fold] ( .5,-2.5) -- +(0,4);
+        \draw[fold] (-.5,-2.5) -- +(0,4);
+        \foreach \y in {-2.5,-1.5,1.5} 
+            \draw[fold] (-.5,\y) -- +(1,0);
+        \draw[fold] (-1.5,-0.5) -- +(0,1);
+        \draw[fold] (1.5,-0.5) -- +(0,1);
+        \draw[fold] (-1.5,-0.5) -- +(3,0);
+        \draw[fold] (-1.5,0.5) -- +(3,0);
+
+        % --- Glue Flaps ---
+        \foreach \x/\y/\rot in {
+                            0/1/0,  
+                    0/1/90,         0/1/-90,
+                    -1/0/0,         1/0/0,
+            -1/0/90,                        1/0/-90,
+                    -1/0/180,       1/0/180,
+                    0/-1/90,        0/-1/-90,
+                    0/-2/90,        0/-2/-90,
+                            0/-2/180
+        } \pic[rotate=\rot] at (\x,\y) {flap};
+
+        % --- Instructions ---
+        \coordinate (instr) at (1,1);
+        \draw[fold] (instr) ++(0,0)
+            -- +(.1,0) node[right] {fold};
+        \draw[cut] (instr) ++(0,.1)
+            -- +(.1,0) node[right] {cut};
+        
+    \end{tikzpicture}
+\end{figure}
+\end{document}
