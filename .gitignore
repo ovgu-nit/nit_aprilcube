@@ -1,9 +1,12 @@
 # --- Aprilcube Gitignore ---
 
+# Exclude large file types default
 **.png
 **.stl
 **.3mf
 **.pdf
+**.blend
+**.blend1
 
 # Exclude the original 8x8 px tag textures
 !meshes/tags_original/*.png
