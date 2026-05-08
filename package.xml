@@ -7,6 +7,15 @@
   <maintainer email="vincent.rist@ovgu.de">vincirist</maintainer>
   <license>Apache License 2.0</license>
 
+  <!-- Core Dependencies -->
+  <depend>rclpy</depend>
+  <depend>apriltag_ros</depend>
+  <depend>apriltag_msgs</depend>
+  <depend>cv_bridge</depend>
+
+  <!-- Execution-only Dependencies (Needed for Demo) -->
+  <exec_depend>usb_cam</exec_depend>
+
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
