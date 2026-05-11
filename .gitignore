@@ -12,3 +12,6 @@
 !meshes/tags_original/*.png
 # Image of the printed cube for the readme
 !print3D/printed.png
+
+# Python Cache
+__pycache__
