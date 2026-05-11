@@ -40,7 +40,7 @@ class AprilcubeScene:
         # Cube obejct
         cube_obj = moveit_msgs.msg.CollisionObject()
         cube_obj.header.frame_id = self.node.base_frame
-        cube_obj.id = 'cube'
+        cube_obj.id = 'aprilcube'
         cube_obj.operation = moveit_msgs.msg.CollisionObject.ADD
 
         cube_box = shape_msgs.msg.SolidPrimitive()
