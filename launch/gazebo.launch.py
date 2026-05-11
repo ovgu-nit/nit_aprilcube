@@ -168,5 +168,16 @@ def generate_launch_description():
                     ('image_annotated', image_annotated_topic),
                 ]
             ),
+
+            # Aprilcube pose detection and application to planning/collision scene
+            Node(
+                package=PKG_NAME,
+                executable='aprilcube_detector',
+                name='aprilcube_detector',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': True
+                }],
+            ),
         ]
     )
