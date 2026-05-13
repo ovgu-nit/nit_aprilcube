@@ -19,7 +19,7 @@ tag_height = 1; // tickness of the tags
 // Rendering Parameters
 tag_shape_offset = 0.3; // offset to connest disconnected pixels and print tags in one piece
 tol_to_cube = 0.0; // tolerance taken away from the cube (only influences the cube)
-tol_to_tag = 0.15; // toleracne taken away from the tags (only influences the tags), should be >0 and <tag_shape_offset (see comment for tolerance test below)
+tol_to_tag = 0.15; // tolerance taken away from the tags (only influences the tags), should be >0 and <tag_shape_offset (see comment at tolerance test below)
 // total tolerance = tol_to_tag + tol_to_cube
 
 // --- TAGS ---
