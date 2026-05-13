@@ -4,9 +4,10 @@ from launch.actions import ExecuteProcess, TimerAction
 from ament_index_python.packages import get_package_share_directory
 from pathlib import Path
 
+PKG_NAME = 'nit_aprilcube'
+PKG_PATH = Path(get_package_share_directory(PKG_NAME))
+
 def generate_launch_description():
-    pkg_dir = Path(get_package_share_directory('nit_pick_place'))
-    config_dir = pkg_dir / 'config'
     
     return LaunchDescription([
         # USB Camera
@@ -33,7 +34,7 @@ def generate_launch_description():
             remappings=[
                 ('image_rect', '/image_raw'),
             ],
-            parameters=[config_dir/'apriltag_webcamdemo.yaml']
+            parameters=[PKG_PATH/'config'/'apriltag_webcamdemo.yaml']
         ),
         
         # --- NIT Nodes ---
@@ -66,7 +67,7 @@ def generate_launch_description():
             period=2.0,
             actions=[
                 ExecuteProcess(
-                    cmd=['rviz2', '-d', config_dir/'rviz_webcamdemo.rviz'],
+                    cmd=['rviz2', '-d', PKG_PATH/'config'/'rviz_webcamdemo.rviz'],
                     output='screen'
                 )
             ]
