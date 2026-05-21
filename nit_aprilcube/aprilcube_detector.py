@@ -19,7 +19,7 @@ class AprilcubeDetector(rclpy.node.Node):
                 ('base_frame', 'base_footprint'),
                 ('cube_side_length', 0.05),
                 ('forget_thresh_sec', 5.0),
-                ('novelty_thresh_m', 0.05),
+                ('novelty_thresh_m', 0.001),
                 ('end_effector_link', 'gripper_grasping_frame'),
                 ('planning_group', 'arm_torso'),
             ]
