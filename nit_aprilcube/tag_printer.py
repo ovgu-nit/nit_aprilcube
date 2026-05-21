@@ -35,14 +35,17 @@ class TagPrinter(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = TagPrinter()
+    
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-    finally:
-        if rclpy.ok():
-            node.destroy_node()
-            rclpy.shutdown()
+        node.deactive()
+
+    if rclpy.ok():
+        node.deactive()
+        node.destroy_node()
+        rclpy.shutdown()
+
 
 
 
