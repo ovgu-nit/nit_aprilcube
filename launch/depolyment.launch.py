@@ -51,4 +51,11 @@ def generate_launch_description():
                 str(PKG_DIR / 'config' / 'apriltag_deployment.yaml'), 
             ]
         ),
+
+        Node(
+            package=PKG_NAME,
+            executable='aprilcube_detector',
+            name='aprilcube_detector',
+            output='screen'
+        )
     ])
