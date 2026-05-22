@@ -24,7 +24,7 @@ class AprilcubeDetector(rclpy.node.Node):
                 ('base_frame', 'base_footprint'),
                 ('cube_side_length', 0.05),
                 ('forget_thresh_sec', 5.0),
-                ('novelty_thresh_m', 0.001),
+                ('novelty_thresh_m', 0.01),
                 ('end_effector_link', 'gripper_grasping_frame'),
                 ('planning_group', 'arm_torso'),
             ]
@@ -100,8 +100,9 @@ class AprilcubeDetector(rclpy.node.Node):
 
     def found_cube_callback(self):
         if self.perceive.cube_pose is None: return
-            
-        self.get_logger().info('Cube detected; updating planning scene and opening gripper.')
+        
+        x, y, z = self.perceive.cube_pose.position.x, self.perceive.cube_pose.position.y, self.perceive.cube_pose.position.z
+        self.get_logger().info(f'Cube detected @ ({x=:.2f}, {y=:.2f}, {z=:.2f}).')
         self.scene.update_collision_objects(self.perceive.cube_pose)
         
         # --- PUBLISH CUBE POSE ---
@@ -127,7 +128,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        node.deactive()
+        #node.deactive() # causes trouble on exit
         node.destroy_node()
 
 
