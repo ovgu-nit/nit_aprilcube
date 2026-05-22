@@ -40,7 +40,7 @@ def generate_launch_description():
         Node(
             package='apriltag_ros',
             executable='apriltag_node',
-            name='apriltag_node',
+            name='apriltag',
             output='screen',
             remappings=[
                 ('image_rect', image_raw_topic),
