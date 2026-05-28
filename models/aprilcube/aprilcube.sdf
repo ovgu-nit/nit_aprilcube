@@ -29,14 +29,16 @@
               <mu>30.0</mu>
               <mu2>30.0</mu2>
               <fdir1>0 0 0</fdir1>
+              <slip1>0.0</slip1>
+              <slip2>0.0</slip2>
             </ode>
           </friction>
           <contact>
             <ode>
-              <kp>1000000.0</kp>
-              <kd>100.0</kd>
-              <min_depth>0.0025</min_depth>
-              <max_vel>1.0</max_vel>
+            <kp>1000000.0</kp>   <!-- 10x stiffer -->
+<kd>10.0</kd>         <!-- a bit more damping -->
+<min_depth>0.0001</min_depth>  <!-- tighter contact threshold -->
+<max_vel>0.01</max_vel>        <!-- slower penetration response -->
             </ode>
           </contact>
         </surface>
@@ -51,11 +53,10 @@
           </mesh>
         </geometry>
       </visual>
-
-      <velocity_decay>
-        <linear>0.000000</linear>
-        <angular>0.000000</angular>
-      </velocity_decay>
+<velocity_decay>
+  <linear>0.01</linear>
+  <angular>0.01</angular>
+</velocity_decay>
       <self_collide>0</self_collide>
       <kinematic>0</kinematic>
       <gravity>1</gravity>

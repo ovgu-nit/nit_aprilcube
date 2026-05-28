@@ -1,0 +1,9 @@
+apriltag:
+  ros__parameters:
+    image_transport: raw
+    family: 16h5
+    size: 0.0375
+    pose_estimation_method: "pnp"
+    tag:
+      ids: [0,1,2,3,4,5]
+      frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]

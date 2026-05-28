@@ -9,6 +9,9 @@
 **.blend1
 
 # Exclude the original 8x8 px tag textures
-!meshes/tags_original/*.png
+!models/aprilcube/meshes/tags_original/*.png
 # Image of the printed cube for the readme
 !print3D/printed.png
+
+# Python Cache
+__pycache__

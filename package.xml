@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>nit_aprilcube</name>
+  <version>0.0.0</version>
+  <description>Aprilcube: a cube with apriltags. An easy to detect object.</description>
+  <maintainer email="vincent.rist@ovgu.de">vincirist</maintainer>
+  <license>Apache License 2.0</license>
+
+  <!-- Core Dependencies -->
+  <depend>rclpy</depend>
+  <depend>apriltag_ros</depend>
+  <depend>apriltag_msgs</depend>
+  <depend>cv_bridge</depend>
+
+  <!-- Execution-only Dependencies (Needed for Demo) -->
+  <exec_depend>usb_cam</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

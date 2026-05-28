@@ -2,24 +2,24 @@
 
 APRILCUBE
 
-3D-Model of an Aprilcube. Each side has a different april tag on it.
+3D-Model of an Aprilcube. Each side has a different apriltag on it.
 Used for easy object detection.
 
 terminology:
-"tags" refers to the black part of the apriltag that is printed as loos thin plates
-"cube" refers to the solid cube and the white parts of the tags, that are printed onto the cube
+"tags" refers to the black parts of the apriltag that is printed as loose, thin plates
+"cube" refers to the solid cube and the white parts of the tags, that are driectly printed onto the cube
 
  */
 
 
 // Object Parameters (all length in mm)
-cube_side_length = 50; // cube side
+cube_side_length = 50; // cube side length (NIT standard is 5cm)
 tag_height = 1; // tickness of the tags
 
 // Rendering Parameters
-tag_shape_offset = 0.3; // offset to connest disconnected pixels and print tags in one piece
+tag_shape_offset = 0.3; // offset to connect disconnected pixels and print tags in one piece
 tol_to_cube = 0.0; // tolerance taken away from the cube (only influences the cube)
-tol_to_tag = 0.15; // toleracne taken away from the tags (only influences the tags), should be >0 and <tag_shape_offset (see comment for tolerance test below)
+tol_to_tag = 0.15; // tolerance taken away from the tags (only influences the tags), should be >0 and <tag_shape_offset (see comment at tolerance test below)
 // total tolerance = tol_to_tag + tol_to_cube
 
 // --- TAGS ---

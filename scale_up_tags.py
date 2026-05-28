@@ -5,7 +5,7 @@ from PIL import Image
 
 # --- Defaults ---
 
-_input_dir_default: Path = Path(__file__).parent / 'meshes' / 'tags_original'
+_input_dir_default: Path = Path(__file__).parent / 'models' / 'aprilcube' / 'meshes' / 'tags_original'
 _output_dir_default: Path = None
 # _input_size: int = 8
 _output_size_default: int = 512
@@ -36,8 +36,7 @@ def _get_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         '--force', 
-        type=bool, 
-        default=_force_scale_default, 
+        action='store_true',
         help='Regenerate textures even if they already exist'
     )
     return parser
@@ -70,24 +69,25 @@ def scale_up_tags(
                     all_ok = False
                     break
         if all_ok:
-            print(f'All generated textures already exist in {output_dir}, skipping generation.')
+            print(f'Scaled tags alread exists. Use --force to force a regeneration.')
             return
 
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    if force: print(f'Generating all scaled tags ...', end='')
+    else: print(f'Generating missing scaled tags ...', end='')
     for source_path in files:
         target_path = output_dir / source_path.name
         if target_path.exists() and target_path.stat().st_size > 0 and not force:
             with Image.open(target_path) as img:
                 if img.size == (output_size, output_size):
-                    print(f'Skipping existing {target_path}')
                     continue
 
-        print(f'Generating {target_path} from {source_path}')
         img = Image.open(source_path)
         img = img.convert('RGBA')
         img = img.resize((output_size, output_size), resample=Image.NEAREST)
         img.save(target_path)
+    print(f'done.')
 
 
 def main() -> None:
