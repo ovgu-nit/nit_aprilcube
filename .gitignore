@@ -15,3 +15,6 @@
 
 # Python Cache
 __pycache__
+
+# Latex build folder
+print2D/build

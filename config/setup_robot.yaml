@@ -1,0 +1,17 @@
+apriltag_params:
+  image_transport: compressed
+  family: 16h5
+  size: 0.0375
+  pose_estimation_method: "pnp"
+  tag:
+    ids: [0,1,2,3,4,5]
+    frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
+
+use_sim_time: false
+spawn_cube: false
+
+annotator:
+  enabled: false
+  image_raw: /head_front_camera/rgb/image_raw
+  detections: /detections
+  image_annotated: /image_annotated
