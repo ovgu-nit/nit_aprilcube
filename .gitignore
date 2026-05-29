@@ -18,3 +18,6 @@ __pycache__
 
 # Latex build folder
 print2D/build
+
+# Folder for old files
+archive
