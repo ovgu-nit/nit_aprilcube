@@ -48,11 +48,51 @@ You have no 3D printer, but want to become an aprilcube owner nonetheless? If yo
 
 Depending on the setup, there are a view different launch configuration modes available. Each modes configurations and parameters are kept in their respective yaml file in the config folder. 
 
-- **webcam**: To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
-    ```bash
-    ros2 launch nit_aprilcube detect.launch.py mode:=webcam
-    ```
-- 
+### Webcam-Demo
+To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+```
+
+### Simulation
+
+
+Set up the [tiago simulation workspace](https://github.com/pal-robotics/tiago_simulation):
+```bash
+sudo apt-get update; sudo apt-get install git python3-vcstool python3-rosdep python3-colcon-common-extensions
+mkdir -p ~/tiago_public_ws/src; cd ~/tiago_public_ws
+vcs import --input https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/humble-devel/tiago_public.repos src
+sudo rosdep init; rosdep update
+rosdep install --from-paths src -y --ignore-src
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+cd .. # back to workspace
+```
+
+(checkout the correct branch if not on humble-devel, remove this command after pull request)
+```bash
+cd src/nit_pick_place
+git checkout deploy_on_real
+cd ../.. # back to workspace
+```
+
+Then run the setup script from the workspace root. It will clone the remaining dependencies, install packages, and build everything:
+```bash
+sh ./src/nit_aprilcube/sim_install.sh
+```
+
+Launch the simulation, aprilcube with detection, and the pick and place node:
+```bash 
+ros2 launch nit_aprilcube detect.launch.py mode:=sim
+```
+- This launches the Gazebo simulator from PAL Robotics with Tiago in a tabletop scene. The default aruco cube gets replaced by the aprilcube. 
+- Rviz will open with panels showing the annotated camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table).
+- The demo starts a "tuck arm"-movement. Sometimes this causes problems in the simulation. In that case just relaunch the demo.
+- The head_follower node will follow the cube.
 
 
 ----
