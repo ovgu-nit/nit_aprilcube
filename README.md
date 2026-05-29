@@ -68,25 +68,25 @@ rosdep install --from-paths src -y --ignore-src
 
 Clone this package into the workspace:
 ```bash
-cd src
+cd ~/tiago_public_ws/src
 git clone git@github.com:ovgu-nit/nit_aprilcube.git
-cd .. # back to workspace
 ```
 
-(checkout the correct branch if not on humble-devel, remove this command after pull request)
+(if not on `humble-devel`, checkout the correct branch)
 ```bash
-cd src/nit_pick_place
+cd ~/tiago_public_ws/src/nit_aprilcube
 git checkout deploy_on_real
-cd ../.. # back to workspace
 ```
 
-Then run the setup script from the workspace root. It will clone the remaining dependencies, install packages, and build everything:
+Then run the install script from the workspace root:
 ```bash
-sh ./src/nit_aprilcube/sim_install.sh
+cd ~/tiago_public_ws
+bash src/nit_aprilcube/sim_install.sh
+source install/setup.bash
 ```
 
-Launch the simulation, aprilcube with detection, and the pick and place node:
-```bash 
+Launch the simulation:
+```bash
 ros2 launch nit_aprilcube detect.launch.py mode:=sim
 ```
 - This launches the Gazebo simulator from PAL Robotics with Tiago in a tabletop scene. The default aruco cube gets replaced by the aprilcube. 

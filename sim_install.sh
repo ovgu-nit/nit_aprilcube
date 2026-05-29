@@ -2,28 +2,32 @@
 set -eu
 
 # ---
-# Setup script for nit_pick_place with TIAGo simulation
+# Setup script for nit_aprilcube with TIAGo simulation
 # Run this from the root of your colcon workspace after
-# cloning nit_pick_place into src/.
+# cloning nit_aprilcube into src/. For example:
+#
+#   cd ~/tiago_public_ws
+#   bash src/nit_aprilcube/sim_install.sh
+#   source install/setup.bash
 # ---
 
-# Assumes that this script is run from within the workspace folder
-cd src
+SCRIPTPATH="$(cd "$(dirname "$0")" && pwd)"
+WORKSPACE="$(cd "$SCRIPTPATH"/../../.. && pwd)"
 
-# The demo uses the aprilcube as a demo object to pick and place.
-# Scale up the tag textures so the model loads correctly in simulation.
-cd nit_aprilcube
+cd "$SCRIPTPATH"
+
+# Scale up tag textures so Gazebo renders them crisply
 python3 scale_up_tags.py
-cd .. # back to src
 
-# Install all other dependencies via rosdep
-cd .. # back to workspace
+# Install all dependencies via rosdep
+cd "$WORKSPACE"
 rosdep install --from-paths src --ignore-src -r -y
 
-# Build the workspace, suppressing deprecation errors and override warnings
+# Build the workspace
 SIM_INSTALL=true colcon build --symlink-install \
   --allow-overriding launch_pal pal_urdf_utils play_motion2 play_motion2_msgs nit_messages \
   --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
 
-# Source workspace
-source install/setup.bash
+echo ""
+echo "Build complete. Now source the workspace:"
+echo "  source $WORKSPACE/install/setup.bash"
