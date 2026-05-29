@@ -21,7 +21,20 @@ def parse_yaml_file(mode: str):
 def launch_function(
         context: launch.launch_context.LaunchContext
 ):
+
     mode = context.launch_configurations.get('mode')
+
+    # Force user specification check
+    if mode == 'REQUIRED':
+        from launch.substitutions import SubstitutionFailure
+        raise SubstitutionFailure(
+f"""\033[91m
+[{PKG_NAME}] You must specifiy a launch mode. See Readme for more info or try again like this for a webcam-demo:
+    ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+\033[0m
+"""
+        )
+
     config = parse_yaml_file(mode)
 
     actions = []
@@ -35,6 +48,19 @@ def launch_function(
                 name='usb_cam',
                 output='screen',
                 parameters=[config['usb_cam']['parameters']]
+            )
+        )
+
+    if 'tiago_gazebo' in config:
+        tiago_gazebo_dir = Path(get_package_share_directory('tiago_gazebo'))
+
+        from launch.launch_description_sources import PythonLaunchDescriptionSource
+        actions.append(
+            launch.actions.IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    tiago_gazebo_dir / 'launch' / 'tiago_gazebo.launch.py'
+                ),
+                launch_arguments=config['tiago_gazebo']['launch_arguments'].items()
             )
         )
 
@@ -93,14 +119,12 @@ def launch_function(
 
 
 def generate_launch_description():
-
-    print(f""" --- Launching {PKG_NAME} --- """)
-    
     return launch.LaunchDescription([
         launch.actions.DeclareLaunchArgument(
             'mode',
-            choices=['webcam'],
-            description='Setup mode / environment profile (webcam, sim, remote, robot)'
+            default_value='REQUIRED',
+            choices=['webcam', 'sim', 'REQUIRED'],
+            description='Setup mode / environment profile (REQUIRED)'
         ),
 
         launch.actions.OpaqueFunction(

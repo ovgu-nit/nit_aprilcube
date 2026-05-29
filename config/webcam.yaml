@@ -19,8 +19,8 @@ apriltag:
       frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
 
 image_annotator:
-  parameters:
-    input_image_topic: /image_raw
+  remappings:
+    image_raw: /image_raw
 
 rviz:
   launch_delay_sec: 2.0
