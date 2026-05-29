@@ -46,6 +46,20 @@ You have no 3D printer, but want to become an aprilcube owner nonetheless? If yo
 
 ## Launch Configurations
 
+Depending on the setup, there are a view different launch configuration modes available. Each modes configurations and parameters are kept in their respective yaml file in the config folder. 
+
+- **webcam**: To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
+    ```bash
+    ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+    ```
+- 
+
+
+----
+# Old stuff
+
+## Launch Configurations
+
 The package ships with three pre-configured setups selected by the `mode` argument:
 
 | Mode | Use case | Transport | Annotator | Spawn cube |
@@ -126,3 +140,10 @@ IncludeLaunchDescription(
     export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:$(ros2 pkg prefix nit_aprilcube)/share/nit_aprilcube/models"
     ```
 - Install dependencies with rosdep and build your workspace with colcon.
+
+
+### 
+
+colcon build --symlink-install \
+  --allow-overriding launch_pal pal_urdf_utils play_motion2 play_motion2_msgs nit_messages \
+  --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
