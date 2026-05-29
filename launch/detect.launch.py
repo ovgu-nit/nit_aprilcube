@@ -224,6 +224,23 @@ f"""\033[91m
             )
         )
 
+    if 'head_follower' in config:
+        remappings_list = []
+        if 'remappings' in config['head_follower']:
+            remappings_list = [(k, v) for k, v in config['head_follower']['remappings'].items()]
+
+        params_list = config['head_follower'].get('parameters', {})
+
+        actions.append(
+            launch_ros.actions.Node(
+                package='nit_aprilcube',
+                executable='head_follower',
+                name='head_follower',
+                output='screen',
+                remappings=remappings_list,
+                parameters=[params_list]
+            )
+        )
 
     return actions
 
