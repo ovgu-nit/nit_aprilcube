@@ -14,6 +14,30 @@ from ament_index_python.packages import get_package_share_directory
 PKG_NAME = 'nit_aprilcube'
 PKG_DIR = Path(get_package_share_directory(PKG_NAME))
 
+# Defaults used for anything not set in the setup YAML
+_DEFAULTS = {
+    'use_sim_time': False,
+    'spawn_cube': False,
+    'spawn_cube_pose': {
+        'x': 1.0, 'y': 0.0, 'z': 1.0, 'R': 0.1, 'P': 0.1, 'Y': 0.1
+    },
+    'annotator_params': {
+        'enabled': False,
+        'output_image_topic': '/image_annotated',
+        'input_image_topic': '/image_raw',
+        'detections_topic': '/detections',
+    },
+}
+
+
+def _merge_defaults(s):
+    for key, default in _DEFAULTS.items():
+        if key not in s:
+            s[key] = default
+        elif isinstance(default, dict):
+            for k, v in default.items():
+                s[key].setdefault(k, v)
+
 
 def _launch_setup(context):
     mode = context.launch_configurations.get('mode', 'sim')
@@ -22,21 +46,22 @@ def _launch_setup(context):
     with open(setup_file) as f:
         s = yaml.safe_load(f)
 
-    # Push user overrides into the annotator block
-    for key in ('image_raw', 'detections', 'image_annotated'):
-        val = context.launch_configurations.get(key)
-        if val:
-            s.setdefault('annotator', {})[key] = val
+    _merge_defaults(s)
 
-    val = context.launch_configurations.get('use_sim_time')
-    if val:
-        s['use_sim_time'] = val
+    # Launch argument overrides
+    if context.launch_configurations.get('image_raw'):
+        s['input_image_topic'] = context.launch_configurations['image_raw']
+    if context.launch_configurations.get('detections'):
+        s['detections_topic'] = context.launch_configurations['detections']
+    if context.launch_configurations.get('use_sim_time'):
+        s['use_sim_time'] = context.launch_configurations['use_sim_time']
 
-    annotator = s.get('annotator', {})
-    a_raw    = annotator.get('image_raw', '/image_raw')
-    a_detect = annotator.get('detections', '/detections')
-    a_annot  = annotator.get('image_annotated', '/image_annotated')
-    sim_time = s.get('use_sim_time', False)
+    annotator = s['annotator_params']
+    a_enabled = annotator.get('enabled', False)
+    a_raw     = s['input_image_topic']
+    a_detect  = s['detections_topic']
+    a_annot   = annotator.get('output_image_topic', '/image_annotated')
+    sim_time  = s['use_sim_time']
 
     actions = []
 
@@ -50,23 +75,22 @@ def _launch_setup(context):
     if s.get('spawn_cube', False):
         sdf_path = PKG_DIR / 'models' / 'aprilcube' / 'aprilcube.sdf'
         if not sdf_path.exists():
-            print(f'[{PKG_NAME}] ERROR: {sdf_path} not found.\n'
-                  'Model files are not installed by default. Rebuild with:\n'
-                  f'  ROS_SIM=true colcon build --packages-select {PKG_NAME}',
+            print(f"""[{PKG_NAME}] ERROR: {sdf_path} not found.
+Model files are not installed by default. Rebuild with:
+    ROS_SIM=true colcon build --packages-select {PKG_NAME}""",
                   file=sys.stderr)
             sys.exit(1)
 
         tags_dir = PKG_DIR / 'models' / 'aprilcube' / 'meshes' / 'tags_scaled'
         if not tags_dir.is_dir():
-            print(f'[{PKG_NAME}] ERROR: Scaled texture directory {tags_dir} not found.\n'
-                  'The original 8x8 px textures are too small for Gazebo.\n'
-                  'Run the scaling script from your workspace root and rebuild:\n'
-                  '  python3 src/nit_aprilcube/scale_up_tags.py\n'
-                  f'  ROS_SIM=true colcon build --packages-select {PKG_NAME}',
+            print(f"""[{PKG_NAME}] ERROR: Scaled texture directory {tags_dir} not found.
+Run the scaling script from your workspace root and rebuild:
+    python3 src/nit_aprilcube/scale_up_tags.py
+    ROS_SIM=true colcon build --packages-select {PKG_NAME}""",
                   file=sys.stderr)
             sys.exit(1)
 
-        pose = s.get('cube_pose', {})
+        pose = s.get('spawn_cube_pose', _DEFAULTS['spawn_cube_pose'])
         actions.append(TimerAction(
             period=LaunchConfiguration('spawn_delay_sec'),
             actions=[Node(
@@ -97,7 +121,7 @@ def _launch_setup(context):
             {'use_sim_time': sim_time},
         ]))
 
-    if annotator.get('enabled', False):
+    if a_enabled:
         actions.append(Node(
             package=PKG_NAME, executable='image_annotator',
             name='image_annotator', output='screen',
@@ -127,15 +151,13 @@ def generate_launch_description():
         DeclareLaunchArgument('mode', default_value='sim',
                               description='sim | robot | remote'),
         DeclareLaunchArgument('image_raw', default_value='',
-                              description='Override image topic from setup YAML'),
+                              description='Override image topic'),
         DeclareLaunchArgument('detections', default_value='',
-                              description='Override detections topic from setup YAML'),
-        DeclareLaunchArgument('image_annotated', default_value='',
-                              description='Override annotated image topic from setup YAML'),
+                              description='Override detections topic'),
         DeclareLaunchArgument('use_sim_time', default_value='',
-                              description='Override use_sim_time from setup YAML'),
+                              description='Override use_sim_time'),
         DeclareLaunchArgument('spawn_delay_sec', default_value='0.0',
-                              description='Delay before spawning cube in Gazebo'),
+                              description='Delay before spawning cube'),
         DeclareLaunchArgument('use_tag_printer', default_value='false',
                               description='Enable tag_printer debug node'),
         OpaqueFunction(function=_launch_setup),

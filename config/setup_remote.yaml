@@ -6,12 +6,3 @@ apriltag_params:
   tag:
     ids: [0,1,2,3,4,5]
     frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
-
-use_sim_time: false
-spawn_cube: false
-
-annotator:
-  enabled: true
-  image_raw: /image_raw
-  detections: /detections
-  image_annotated: /image_annotated
