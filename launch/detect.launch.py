@@ -64,6 +64,18 @@ f"""\033[91m
             )
         )
 
+        # Despawn the default arucocube object from gazebo
+        if config['tiago_gazebo'].get('despawn_aruco_cube', False):
+            actions.append(
+                launch.actions.ExecuteProcess(
+                    cmd=[
+                        'ros2', 'service', 'call', '/delete_entity', 'gazebo_msgs/srv/DeleteEntity', '{"name":"aruco_cube"}'
+                    ],
+                    output='screen'
+                ),
+            )
+
+
     if 'apriltag' in config:
         remappings_list = []
         if 'remappings' in config['apriltag']:
