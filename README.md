@@ -142,8 +142,17 @@ IncludeLaunchDescription(
 - Install dependencies with rosdep and build your workspace with colcon.
 
 
-### 
+---
 
-colcon build --symlink-install \
+# Copy & Paste Area
+
+SIM_INSTALL=true colcon build --symlink-install \
   --allow-overriding launch_pal pal_urdf_utils play_motion2 play_motion2_msgs nit_messages \
   --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
+
+SIM_INSTALL=true cbps nit_aprilcube
+
+cbps nit_aprilcube
+
+rm -rf build/nit_aprilcube/ install/nit_aprilcube/
+

@@ -7,10 +7,9 @@ PKG_NAME = 'nit_aprilcube'
 
 # Only deploy Gazebo models when ROS_SIM=true (build-time choice)
 # On the robot, omit this to keep the install lightweight.
-IS_SIM = os.environ.get('ROS_SIM', 'false').lower() == 'true'
-
 model_data_files = []
-if IS_SIM:
+SIM_INSTALL = os.environ.get('SIM_INSTALL', 'false').lower() == 'true'
+if SIM_INSTALL:
     for root, _, files in os.walk('models'):
         if files:
             target_dir = os.path.join('share', PKG_NAME, root)

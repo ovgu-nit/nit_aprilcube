@@ -1,5 +1,6 @@
 tiago_gazebo:
   use_sim_time: true
+
   launch_arguments:
     is_public_sim: "True"
     world_name: tabletop_cube
@@ -7,15 +8,19 @@ tiago_gazebo:
     end_effector: pal-gripper
     tuck_arm: "True"
     moveit: "True"
-  despawn_aruco_cube: true
-  spawn_cube:
+
+  despawn_aruco_cube:
+    despawn_delay_sec: 2.0
+
+  spawn_aprilcube:
+    spawn_delay_sec: 2.0
     pose:
       x: 1.0
       y: 0.0
       z: 1.0
-      R: 0.1
-      P: 0.1
-      Y: 0.1
+      roll: 0.1
+      pitch: 0.1
+      yaw: 0.1
 
 apriltag:
   remappings:
@@ -24,14 +29,14 @@ apriltag:
     image_transport: raw
     family: 16h5
     size: 0.05
-    pose_estimation_method: ""  # Empty string disables pose estimation
+    pose_estimation_method: ""
     tag:
       ids: [0,1,2,3,4,5]
       frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
 
-image_annotator:
-  remappings:
-    image_raw: /head_front_camera/rgb/image_raw
+# image_annotator:
+#   remappings:
+#     image_raw: /head_front_camera/rgb/image_raw
 
 rviz:
   launch_delay_sec: 2.0
