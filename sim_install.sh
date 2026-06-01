@@ -12,7 +12,7 @@ set -eu
 # ---
 
 SCRIPTPATH="$(cd "$(dirname "$0")" && pwd)"
-WORKSPACE="$(cd "$SCRIPTPATH"/../../.. && pwd)"
+WORKSPACE="$(cd "$SCRIPTPATH"/../.. && pwd)"
 
 cd "$SCRIPTPATH"
 
