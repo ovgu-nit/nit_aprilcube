@@ -9,8 +9,9 @@ cd "$WORKSPACE"
 rosdep install --from-paths src --ignore-src -r -y
 
 # Build the workspace
-REMOTE_INSTALL=true colcon build --symlink-install \
-  --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
+PYTHONWARNINGS="ignore" REMOTE_INSTALL=true colcon build --symlink-install \
+  --allow-overriding nit_aprilcube \
+  --cmake-args --no-warn-unused-cli -Wno-dev
 
 echo ""
 echo "Build complete. Now source the workspace:"
