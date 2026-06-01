@@ -63,7 +63,6 @@ sudo apt-get update; sudo apt-get install git python3-vcstool python3-rosdep pyt
 mkdir -p ~/tiago_public_ws/src; cd ~/tiago_public_ws
 vcs import --input https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/humble-devel/tiago_public.repos src
 sudo rosdep init; rosdep update
-rosdep install --from-paths src -y --ignore-src
 ```
 
 Clone this package into the workspace:
@@ -92,6 +91,42 @@ ros2 launch nit_aprilcube detect.launch.py mode:=sim
 - This launches the Gazebo simulator from PAL Robotics with Tiago in a tabletop scene. The default aruco cube gets replaced by the aprilcube. 
 - Rviz will open with panels showing the annotated camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table).
 - The demo starts a "tuck arm"-movement. Sometimes this causes problems in the simulation. In that case just relaunch the demo.
+- The head_follower node will follow the cube.
+
+
+### Remotely on real TIAGo
+
+
+Set up a new testing workspace if necessary:
+```bash
+mkdir -p ~/nit_test_ws/src; cd ~/nit_test_ws
+sudo rosdep init; rosdep update
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd nit_aprilcube
+git checkout 4-test-aprilcube-detection-in-real-deployment-on-tiago
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ../.. # back to nit_test_ws
+bash src/nit_aprilcube/remote_install.sh
+source install/setup.bash
+```
+
+Launch the deploy script with remote-configurations:
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=remote
+```
+- Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
 - The head_follower node will follow the cube.
 
 
