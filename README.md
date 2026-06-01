@@ -44,75 +44,155 @@ The printable STLs are modeled with [OpenSCAD](https://openscad.org/) in `print/
 
 You have no 3D printer, but want to become an aprilcube owner nonetheless? If you instead have a 2D printer, scissors and glue, referr to `print2D/`. The latex file provides a flattened aprilcube texture with cut, fold, and glue instructions.
 
-## Webcam Demo
+## Launch Configurations
 
-To troubleshoot the apriltag detection build and source your workspace, then run:
+Depending on the setup, there are a view different launch configuration modes available. Each modes configurations and parameters are kept in their respective yaml file in the config folder. 
+
+### Webcam-Demo
+To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
 ```bash
-ros2 launch nit_aprilcube webcamdemo.launch.py
+ros2 launch nit_aprilcube detect.launch.py mode:=webcam
 ```
-Hold your 3D april cube or your print out into your webcam and see the verify the detection in the annoted image in RViz.
 
-## Simulation with Gazebo
+### Simulation
 
-- The original tag images (see `meshes/tags_original`) as provided by the apriltag repo have a minimal size of 8 by 8 pixels. Using those directly as textures causes many simulators including Gazebo to blur the images. To overcome this, cd into the package directony and run
+
+Set up the [tiago simulation workspace](https://github.com/pal-robotics/tiago_simulation):
+```bash
+sudo apt-get update; sudo apt-get install git python3-vcstool python3-rosdep python3-colcon-common-extensions
+mkdir -p ~/tiago_public_ws/src; cd ~/tiago_public_ws
+vcs import --input https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/humble-devel/tiago_public.repos src
+sudo rosdep init; rosdep update
+rosdep install --from-paths src -y --ignore-src
+```
+
+Clone this package into the workspace:
+```bash
+cd ~/tiago_public_ws/src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd ~/tiago_public_ws/src/nit_aprilcube
+git checkout deploy_on_real
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ~/tiago_public_ws
+bash src/nit_aprilcube/sim_install.sh
+source install/setup.bash
+```
+
+Launch the simulation:
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=sim
+```
+- This launches the Gazebo simulator from PAL Robotics with Tiago in a tabletop scene. The default aruco cube gets replaced by the aprilcube. 
+- Rviz will open with panels showing the annotated camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table).
+- The demo starts a "tuck arm"-movement. Sometimes this causes problems in the simulation. In that case just relaunch the demo.
+- The head_follower node will follow the cube.
+
+
+----
+# Old stuff
+
+## Launch Configurations
+
+The package ships with three pre-configured setups selected by the `mode` argument:
+
+| Mode | Use case | Transport | Annotator | Spawn cube |
+|------|----------|-----------|-----------|------------|
+| `sim` | Gazebo simulation | raw | yes | yes |
+| `robot` | On-robot deployment | compressed | no | no |
+| `remote` | Remote PC visualization | compressed | yes | no |
+
+Each mode is defined by a YAML file in `config/setup_<mode>.yaml` — the single source of truth for that setup. To change behavior, edit the YAML, not the launch file.
+
+### Usage
+
+```bash
+# Simulation
+ros2 launch nit_aprilcube detect.launch.py mode:=sim
+
+# On robot (CPU-efficient, no GUI overhead)
+ros2 launch nit_aprilcube detect.launch.py mode:=robot
+
+# Remote PC (receive compressed stream, annotate, visualize)
+ros2 launch nit_aprilcube detect.launch.py mode:=remote
+```
+
+Optional overrides:
+```bash
+# Custom image topic
+ros2 launch nit_aprilcube detect.launch.py mode:=robot image_raw:=/my/camera/image
+
+# Enable debug printer
+ros2 launch nit_aprilcube detect.launch.py mode:=sim use_tag_printer:=true
+
+# Delay cube spawn (sim only)
+ros2 launch nit_aprilcube detect.launch.py mode:=sim spawn_delay_sec:=2.0
+```
+
+To add a new mode, create `config/setup_<name>.yaml` and launch with `mode:=<name>` — no code changes.
+
+### Include in another launch file
+
+```python
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+
+nit_aprilcube_dir = get_package_share_directory('nit_aprilcube')
+
+IncludeLaunchDescription(
+    PythonLaunchDescriptionSource(
+        os.path.join(nit_aprilcube_dir, 'launch', 'detect.launch.py')
+    ),
+    launch_arguments={'mode': 'sim', 'x': '0.7'}.items()
+)
+```
+
+### Gazebo prerequisites
+
+- The original tag images (`models/aprilcube/meshes/tags_original/`) provided by the apriltag repo have a minimal size of 8×8 pixels. Using those directly causes Gazebo to blur the images. To fix this:
     ```bash
     python3 scale_up_tags.py
     ```
-    The script creates scaled up version (512 px by default) of the tags and places them in `meshes/tags_scaled`.
+    This creates scaled-up versions (512 px by default) in `models/aprilcube/meshes/tags_scaled/`.
 
-- To use the aprilcube in Gazebo (tested with ROS2 Humble), make sure the package and the model file match this structure (default if you install this repo as a ROS2-package in your workspace):
+- The model directory structure (automatic when installed as a ROS2 package):
     ```
     ros2_ws/
     └ src/nit_aprilcube/
-        ├ ... (other files)
+        ├ ...
         └ models/
             └ aprilcube/
                 ├ meshes/
                 │   ├ tags_scaled/
-                │   │   └ ...
                 │   └ aprilcube.dae
                 ├ aprilcube.sdf
-                ├ model.config
-                └ ...
+                └ model.config
     ```
-- Gazebo needs to know the path to the model files before launch. You have two options:
-    1. Add the install path to the environment variable by calling:
-        ```bash
-        export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:$(ros2 pkg prefix nit_aprilcube)/share/nit_aprilcube/models"
-        ```
-    2. or – if you start Gazebo with a launch file – at this in the launch file before Gazebo:
-        ```python
-        SetEnvironmentVariable(
-            name='GAZEBO_MODEL_PATH',
-            value=[
-                EnvironmentVariable('GAZEBO_MODEL_PATH', default_value=''),
-                os.pathsep,
-                os.path.join(get_package_share_directory('nit_aprilcube'), 'models'),
-            ],
-        )
-        ```
+- The launch file automatically sets `GAZEBO_MODEL_PATH` in `sim` mode. If you start Gazebo separately, export the path manually:
+    ```bash
+    export GAZEBO_MODEL_PATH="$GAZEBO_MODEL_PATH:$(ros2 pkg prefix nit_aprilcube)/share/nit_aprilcube/models"
+    ```
 - Install dependencies with rosdep and build your workspace with colcon.
-- Spawn the cube to Gazebo:
-    1. either manually through the GUI. You should see the specified path in the Insert-panel.
-    2. or run this in a new terminal:
-        ```bash
-        ros2 launch nit_aprilcube gazebo.launch.py
-        ```
-    4. or automatically in your launch-file by using the launch description of this package:
-        ```python
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                os.path.join(nit_aprilcube_dir, 'launch', 'gazebo.launch.py')
-            ),
-            launch_arguments={
-                'image_raw': '/head_front_camera/rgb/image_raw',
-                'x': '0.7'
-            }.items()
-        )
-        ```
-   Optional launch arguments are:
-    - 'image_raw': rgb image input topic for the tag detection
-    - 'image_annotated': output image topic with annotated tags
-    - 'detections': output topic of tag detections
-    - 'spawn_delay_sec': delay of spawn in seconds, default 0
-    - 'x': 1.0, 'y': 0.0, 'z': 1.0, 'R': 0.1, 'P': 0.1, 'Y': 0.1 (position and orientation parameters of the cube pose with their respective defaults)
+
+
+---
+
+# Copy & Paste Area
+
+SIM_INSTALL=true colcon build --symlink-install \
+  --allow-overriding launch_pal pal_urdf_utils play_motion2 play_motion2_msgs nit_messages \
+  --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
+
+SIM_INSTALL=true cbps nit_aprilcube
+
+cbps nit_aprilcube
+
+rm -rf build/nit_aprilcube/ install/nit_aprilcube/
+

@@ -1,0 +1,55 @@
+tiago_gazebo:
+  use_sim_time: true
+
+  launch_arguments:
+    is_public_sim: "True"
+    world_name: tabletop_cube
+    arm: "True"
+    end_effector: pal-gripper
+    tuck_arm: "True"
+    moveit: "True"
+
+  despawn_aruco_cube:
+    despawn_delay_sec: 2.0
+
+  spawn_aprilcube:
+    spawn_delay_sec: 2.0
+    pose:
+      x: .7
+      y: 0.1
+      z: 1.1
+      roll: 0.2
+      pitch: 0.2
+      yaw: 0.2
+
+apriltag:
+  remappings:
+    image_rect: /head_front_camera/rgb/image_raw
+  parameters:
+    image_transport: raw
+    family: 16h5
+    size: 0.05
+    pose_estimation_method: ""
+    tag:
+      ids: [0,1,2,3,4,5]
+      frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
+
+image_annotator:
+  remappings:
+    image_raw: /head_front_camera/rgb/image_raw
+
+head_follower:
+  remappings:
+    joint_trajectory: /head_controller/joint_trajectory
+    camera_info: /head_front_camera/rgb/camera_info
+  parameters:
+    timer_period_sec: 0.1
+    pan_joint_name: head_1_joint
+    tilt_joint_name: head_2_joint
+    control_gain: 0.001
+    smoothing_factor: 0.3
+
+
+rviz:
+  launch_delay_sec: 2.0
+  config_file: sim.rviz

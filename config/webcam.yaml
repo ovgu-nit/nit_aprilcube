@@ -1,0 +1,27 @@
+usb_cam:
+  parameters:
+    video_device: /dev/video0
+    image_width: 640
+    image_height: 480
+    framerate: 30.0
+    pixel_format: yuyv
+
+apriltag:
+  remappings:
+    image_rect: /image_raw
+  parameters:
+    image_transport: raw
+    family: 16h5
+    size: 0.05
+    pose_estimation_method: ""  # Empty string disables pose estimation
+    tag:
+      ids: [0,1,2,3,4,5]
+      frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
+
+image_annotator:
+  remappings:
+    image_raw: /image_raw
+
+rviz:
+  launch_delay_sec: 2.0
+  config_file: webcam.rviz

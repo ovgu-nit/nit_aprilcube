@@ -1,40 +1,75 @@
 import cv2
 import rclpy
 import numpy as np
+import time
 
-from rclpy.node import Node
-from sensor_msgs.msg import Image
-from apriltag_msgs.msg import AprilTagDetectionArray
-from cv_bridge import CvBridge
+import rclpy.node
+import sensor_msgs.msg
+import apriltag_msgs.msg
+import cv_bridge
 import message_filters
 
 
-class ImageAnnotator(Node):
+class ImageAnnotator(rclpy.node.Node):
 
     def __init__(self):
         super().__init__('image_annotator')
 
-        self.bridge = CvBridge()
-
-        # Publisher for /image_annotated
-        self.publisher = self.create_publisher(Image, '/image_annotated', 10)
-
-        # Subscribers for /image_raw and /detections
-        self.image_sub = message_filters.Subscriber(self, Image, '/image_raw')
-        self.detections_sub = message_filters.Subscriber(self, AprilTagDetectionArray, '/detections')
-
-        # Synchronize the two topics
+        # --- Communication ---
+        self.sub_input_image = message_filters.Subscriber(
+            node=self, 
+            msg_type=sensor_msgs.msg.Image, 
+            topic='image_raw'
+        )
+        self.sub_detections = message_filters.Subscriber(
+            node=self, 
+            msg_type=apriltag_msgs.msg.AprilTagDetectionArray,
+            topic='detections'
+        )
         self.sync = message_filters.ApproximateTimeSynchronizer(
-            [self.image_sub, self.detections_sub],
+            [self.sub_input_image, self.sub_detections],
             queue_size=10,
-            slop=0.05, # 30 Hz -> 33ms, so 50ms should be safe
+            slop=0.05,
             allow_headerless=False,
         )
-        self.sync.registerCallback(self.synced_callback)
+        self.sync.registerCallback(self.annotate_image_callback)
 
-        self.get_logger().info('ImageAnnotator initialized: synchronizing /image_raw and /detections')
+        self.pub_output_image = self.create_publisher(
+            msg_type=sensor_msgs.msg.Image, 
+            topic='image_annotated', 
+            qos_profile=10
+        )
 
-    def synced_callback(self, image_msg: Image, detection_msg: AprilTagDetectionArray):
+
+        # --- Image Processing Utility ---
+        self.bridge = cv_bridge.CvBridge()
+
+        # --- Starvation Watchdog ---
+        self._last_stamp = time.time()
+        self._warned_starvation = False
+        self.create_timer(5.0, self._starvation_watchdog)
+        
+        # --- Logging ---
+        self.get_logger().info('ImageAnnotator initialized: synchronizing image_raw and detections, publishing annotated image to image_annotated.')
+
+    def _starvation_watchdog(self):
+        dt = time.time() - self._last_stamp
+        if dt > 4.0 and not self._warned_starvation:
+            self.get_logger().warning(
+                f'No synchronized data for {dt:.0f}s on topics:\n'
+                '  image:      image_raw\n'
+                '  detections: detections\n'
+                'Check the YAML setup or launch overrides.')
+            self._warned_starvation = True
+
+    def annotate_image_callback(
+            self, 
+            image_msg: sensor_msgs.msg.Image, 
+            detection_msg: apriltag_msgs.msg.AprilTagDetectionArray
+    ):
+        self._last_stamp = time.time()
+        self._warned_starvation = False
+
         try:
             cv_image = self.bridge.imgmsg_to_cv2(image_msg, desired_encoding='bgr8')
         except Exception as exc:
@@ -69,7 +104,7 @@ class ImageAnnotator(Node):
 
         annotated_msg = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
         annotated_msg.header = image_msg.header
-        self.publisher.publish(annotated_msg)
+        self.pub_output_image.publish(annotated_msg)
 
 
 def main(args=None):
@@ -80,11 +115,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
-        if rclpy.ok():
-            node.destroy_node()
-            rclpy.shutdown()
-
-
+        node.destroy_node()
 
 if __name__ == '__main__':
     main()

@@ -4,25 +4,17 @@ from glob import glob
 from setuptools import find_packages, setup
 
 PKG_NAME = 'nit_aprilcube'
-MODEL_NAME = 'aprilcube'
 
-# --- Validation Logic ---
-tags_scale_path = os.path.join('models', MODEL_NAME, 'meshes', 'tags_scaled')
-if not os.path.exists(tags_scale_path) or not os.listdir(tags_scale_path):
-    print(f"ERROR: Texture directory is missing or empty: {tags_scale_path}", file=sys.stderr)
-    print("Please run the 'scale_up_tags.py' script first to generate the scaled textures.", file=sys.stderr)
-    print("\tpython3 src/nit_aprilcube/scale_up_tags.py", file=sys.stderr)
-
-
-# --- Resource Collection ---
-# This helper collects all files in the models directory recursively
+# Only deploy Gazebo models when ROS_SIM=true (build-time choice)
+# On the robot, omit this to keep the install lightweight.
 model_data_files = []
-for root, _, files in os.walk('models'):
-    if files:
-        # Construct the installation path: share/nit_aprilcube/models/...
-        target_dir = os.path.join('share', PKG_NAME, root)
-        file_paths = [os.path.join(root, f) for f in files]
-        model_data_files.append((target_dir, file_paths))
+SIM_INSTALL = os.environ.get('SIM_INSTALL', 'false').lower() == 'true'
+if SIM_INSTALL:
+    for root, _, files in os.walk('models'):
+        if files:
+            target_dir = os.path.join('share', PKG_NAME, root)
+            file_paths = [os.path.join(root, f) for f in files]
+            model_data_files.append((target_dir, file_paths))
 
 setup(
     name=PKG_NAME,
@@ -38,8 +30,6 @@ setup(
 
         # config files
         (os.path.join('share', PKG_NAME, 'config'), glob('config/*')),
-
-        # Merge the recursively found model files into data_files
     ] + model_data_files,
     
     install_requires=['setuptools', 'Pillow'],
@@ -61,6 +51,7 @@ setup(
             'tag_printer = nit_aprilcube.tag_printer:main',
             'image_annotator = nit_aprilcube.image_annotator:main',
             'aprilcube_detector = nit_aprilcube.aprilcube_detector:main',
+            'head_follower = nit_aprilcube.head_follower:main',
         ],
     },
 )
