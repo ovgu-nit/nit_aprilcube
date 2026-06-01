@@ -199,7 +199,7 @@ f"""\033[91m
                 period=float(launch_delay_sec),
                 actions=[
                     launch.actions.ExecuteProcess(
-                        cmd=['rviz2', '-d', config_file],
+                        cmd=['rviz2', '-d', str(config_file)],
                         output='screen'
                     ),
                 ]
