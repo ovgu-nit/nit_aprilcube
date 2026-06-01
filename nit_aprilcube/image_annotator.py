@@ -17,12 +17,12 @@ class ImageAnnotator(rclpy.node.Node):
 
         # --- Communication ---
         self.sub_input_image = message_filters.Subscriber(
-            node=self, 
+            self, 
             msg_type=sensor_msgs.msg.Image, 
             topic='image_raw'
         )
         self.sub_detections = message_filters.Subscriber(
-            node=self, 
+            self, 
             msg_type=apriltag_msgs.msg.AprilTagDetectionArray,
             topic='detections'
         )
@@ -103,7 +103,8 @@ class ImageAnnotator(rclpy.node.Node):
             cv2.polylines(cv_image, [pts], isClosed=True, color=(0, 255, 0), thickness=2)
 
         annotated_msg = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
-        annotated_msg.header = image_msg.header
+        annotated_msg.header.stamp = image_msg.header.stamp
+        annotated_msg.header.frame_id = image_msg.header.frame_id
         self.pub_output_image.publish(annotated_msg)
 
 
