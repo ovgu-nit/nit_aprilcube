@@ -63,7 +63,13 @@ f"""\033[91m
 """
         )
 
-    config = load_yaml_configuration(mode)
+    # Try to parse mode as inline YAML first; fall back to file/keyword lookup
+    try:
+        config = yaml.safe_load(mode)
+        if not isinstance(config, dict):
+            raise ValueError
+    except Exception:
+        config = load_yaml_configuration(mode)
 
     actions = []
 
