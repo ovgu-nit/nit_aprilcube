@@ -22,6 +22,7 @@ class AprilcubeDetector(Node):
         self.declare_parameters(
             namespace='',
             parameters=[
+                # ('use_sim_time', False),
                 ('timer_period_sec', 1.0),
                 ('base_frame', 'base_footprint'),
                 ('cube_side_length', 0.05),
@@ -32,6 +33,7 @@ class AprilcubeDetector(Node):
                 ('publish_pose_enabled', False),
             ]
         )
+        # self.use_sim_time = self.get_parameter('use_sim_time').value
         self.timer_period_sec = self.get_parameter('timer_period_sec').value
         self.base_frame = self.get_parameter('base_frame').value
         self.cube_side_length = self.get_parameter('cube_side_length').value

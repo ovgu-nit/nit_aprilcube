@@ -242,6 +242,24 @@ f"""\033[91m
             )
         )
 
+    if 'aprilcube_detector' in config:
+        remappings_list = []
+        if 'remappings' in config['aprilcube_detector']:
+            remappings_list = [(k, v) for k, v in config['aprilcube_detector']['remappings'].items()]
+
+        params_list = config['aprilcube_detector'].get('parameters', {})
+
+        actions.append(
+            launch_ros.actions.Node(
+                package='nit_aprilcube',
+                executable='aprilcube_detector',
+                name='aprilcube_detector',
+                output='screen',
+                remappings=remappings_list,
+                parameters=[params_list]
+            )
+        )
+
     return actions
 
 
