@@ -28,7 +28,7 @@ apriltag:
   parameters:
     image_transport: raw
     family: 16h5
-    size: 0.05
+    size: 0.0375 # tag size without the puter white pixel ring (1px=0.625cm)
     pose_estimation_method: "pnp"
     tag:
       ids: [0,1,2,3,4,5]
@@ -60,7 +60,7 @@ aprilcube_detector:
     end_effector_link: gripper_grasping_frame
     planning_group: arm_torso
     publish_pose_enabled: true
-    
+
 rviz:
   launch_delay_sec: 2.0
   config_file: sim.rviz
