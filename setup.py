@@ -51,6 +51,7 @@ setup(
             'tag_printer = nit_aprilcube.tag_printer:main',
             'image_annotator = nit_aprilcube.image_annotator:main',
             'head_follower = nit_aprilcube.head_follower:main',
+            'aprilcube_detector = nit_aprilcube.aprilcube_detector:main',
         ],
     },
 )

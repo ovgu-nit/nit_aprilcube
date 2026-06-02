@@ -12,6 +12,9 @@
   <depend>apriltag_ros</depend>
   <depend>apriltag_msgs</depend>
   <depend>cv_bridge</depend>
+  <depend>moveit_msgs</depend>
+  <depend>tf2_ros</depend>
+  <depend>geometry_msgs</depend>
 
   <!-- Execution-only Dependencies (Needed for Demo) -->
   <exec_depend>usb_cam</exec_depend>
