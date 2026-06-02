@@ -23,14 +23,13 @@ class AprilcubeDetector(Node):
             namespace='',
             parameters=[
                 # ('use_sim_time', False),
-                ('timer_period_sec', 1.0),
-                ('base_frame', 'base_footprint'),
-                ('cube_side_length', 0.05),
-                ('forget_thresh_sec', 5.0),
-                ('novelty_thresh_m', 0.01),
-                ('end_effector_link', 'gripper_grasping_frame'),
-                ('planning_group', 'arm_torso'),
-                ('publish_pose_enabled', False),
+                ('timer_period_sec', 1.0), # perception routine periode is seconds
+                ('base_frame', 'base_footprint'), # reference frame for the tags and the cube poses
+                ('cube_side_length', 0.05), # side length of the cube in meters (standard are 5cm)
+                ('forget_thresh_sec', 5.0), # forget timing, if no tags are deteced for longer than this the cube is forgotten (collision objects removed)
+                ('novelty_thresh_m', 0.01), # update sensitivity, if cube pose change more than this, the pose updates
+                ('publish_pose_enabled', False), # if set, new cube poses are published as a topic
+                ('apply_planning_scene_enable', True), # if set, collision objects for cube and table are added and remove for the planning scene for moveit
             ]
         )
         # self.use_sim_time = self.get_parameter('use_sim_time').value
@@ -39,9 +38,8 @@ class AprilcubeDetector(Node):
         self.cube_side_length = self.get_parameter('cube_side_length').value
         self.forget_thresh_sec = self.get_parameter('forget_thresh_sec').value
         self.novelty_thresh_m = self.get_parameter('novelty_thresh_m').value
-        self.end_effector_link = self.get_parameter('end_effector_link').value
-        self.planning_group = self.get_parameter('planning_group').value
         self.publish_pose_enabled = self.get_parameter('publish_pose_enabled').value
+        self.apply_planning_scene_enable = self.get_parameter('apply_planning_scene_enable').value
 
         # --- ROS setup ---
         self.timer = self.create_timer(
@@ -69,10 +67,11 @@ class AprilcubeDetector(Node):
         self.srv_APS_client = self.create_client(
             srv_type=moveit_msgs.srv.ApplyPlanningScene,
             srv_name='/apply_planning_scene',
-        )
-        while not self.srv_APS_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info('Waiting for /apply_planning_scene service...')
-        self.get_logger().info('Connected to /apply_planning_scene service')
+        ) if self.apply_planning_scene_enable else None
+        if self.apply_planning_scene_enable:
+            while not self.srv_APS_client.wait_for_service(timeout_sec=1.0):
+                self.get_logger().info('Waiting for /apply_planning_scene service...')
+            self.get_logger().info('Connected to /apply_planning_scene service')
 
         # --- Tag frame names ---
         self.tag_frame_names = [
@@ -125,9 +124,10 @@ class AprilcubeDetector(Node):
         x, y, z = self.cube_pose.position.x, self.cube_pose.position.y, self.cube_pose.position.z
         self.get_logger().info(f'Cube detected @ (x={x:.2f}, y={y:.2f}, z={z:.2f}).')
         
-        self._update_collision_objects(self.cube_pose)
+        if self.apply_planning_scene_enable:
+            self._update_collision_objects(self.cube_pose)
         
-        if self.pub_cube_pose:
+        if self.publish_pose_enabled:
             msg = geometry_msgs.msg.PoseStamped()
             msg.header.stamp = self.get_clock().now().to_msg()
             msg.header.frame_id = self.base_frame
@@ -138,7 +138,12 @@ class AprilcubeDetector(Node):
         self.get_logger().info('Cube lost; removing planning scene objects.')
         self.cube_pose = None
         self.t_found = None
-        self._remove_collision_objects()
+        if self.apply_planning_scene_enable:
+            self._remove_collision_objects()
+
+    def destroy_node(self):
+        self.forget_cube()
+        super().destroy_node()
 
     # --- Collision scene management ---
 
