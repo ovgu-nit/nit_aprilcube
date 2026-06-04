@@ -48,6 +48,30 @@ You have no 3D printer, but want to become an aprilcube owner nonetheless? If yo
 
 Depending on the setup, there are a view different launch configuration modes available. Each modes configurations and parameters are kept in their respective yaml file in the config folder. 
 
+Launch arguments:
+
+| Argument | Description |
+|----------|-------------|
+| `mode` | Predefined profile name — loads `config/<mode>.yaml` |
+| `file` | Path to a custom YAML config file |
+| `override` | Inline YAML string deep-merged on top of the base config |
+
+Any combination of these can be used — `mode`/`file` establishes the base config, and `override` patches specific keys on top.
+
+```bash
+# Predefined profile
+ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+
+# Custom file
+ros2 launch nit_aprilcube detect.launch.py file:=/path/to/my_config.yaml
+
+# Override a single key from a profile
+ros2 launch nit_aprilcube detect.launch.py mode:=webcam override:="usb_cam: {parameters: {camera_ns: /custom}}"
+
+# Standalone override (no base)
+ros2 launch nit_aprilcube detect.launch.py override:="apriltag: {parameters: {...}}"
+```
+
 ### Webcam-Demo
 To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
 ```bash

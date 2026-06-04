@@ -14,62 +14,93 @@ from launch.actions import ExecuteProcess, TimerAction, DeclareLaunchArgument, O
 PKG_NAME = 'nit_aprilcube'
 PKG_PATH = Path(get_package_share_directory(PKG_NAME))
 
-def load_yaml_configuration(
-    mode_or_path: str
-) -> dict:
-    """
-    Attempts to treat the input as a direct path first. 
-    Falls back to looking inside the package config directory.
-    """
-    given_path = Path(mode_or_path)
-    
-    # Scenario A: User provided a direct absolute or relative file path
-    if given_path.exists() and given_path.is_file():
-        with open(given_path, 'r') as f:
-            return yaml.safe_load(f)
-            
-    # Scenario B: User provided a keyword mode (e.g., 'webcam' or 'sim')
-    default_config_path = PKG_PATH / 'config' / f'{mode_or_path}.yaml'
-    if default_config_path.exists():
-        with open(default_config_path, 'r') as f:
-            return yaml.safe_load(f)
-            
-    # Scenario C: File wasn't found in either location
+def _load_yaml(path: Path) -> dict:
+    with open(path, 'r') as f:
+        return yaml.safe_load(f)
+
+
+def load_config_from_predefined_file(mode: str) -> dict:
+    config_path = PKG_PATH / 'config' / f'{mode}.yaml'
+    if config_path.exists():
+        return _load_yaml(config_path)
     from launch.substitutions import SubstitutionFailure
+    options = [p.stem for p in (PKG_PATH / 'config').glob('*.yaml')]
     raise SubstitutionFailure(
 f"""\033[91m
-[{PKG_NAME}] Could not find configuration file or profile matching: '{mode_or_path}'
-    Looked for file at: {given_path.resolve()}
-    Looked for internal profile at: {default_config_path}
+[{PKG_NAME}] Could not find the predefined mode '{mode}'. Possible options are:
+    {', '.join(options)}
 \033[0m
 """
     )
 
 
+def load_config_from_custom_file(file_path: str) -> dict:
+    given = Path(file_path)
+    if given.exists() and given.is_file():
+        return _load_yaml(given)
+    from launch.substitutions import SubstitutionFailure
+    raise SubstitutionFailure(
+f"""\033[91m
+[{PKG_NAME}] Could not find custom config file: '{file_path}'
+    Looked for: {given.resolve()}
+\033[0m
+"""
+    )
+
+
+def deep_merge(base: dict, overlay: dict) -> dict:
+    merged = base.copy()
+    for key, value in overlay.items():
+        if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+            merged[key] = deep_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 def launch_function(
         context: launch.launch_context.LaunchContext
 ):
+    # Parse launch config
+    config = {}
 
-    mode = context.launch_configurations.get('mode')
+    arg_mode = context.launch_configurations.get('mode', '')
+    if arg_mode:
+        mode_config = load_config_from_predefined_file(arg_mode)
+        config = deep_merge(config, mode_config)
+    
+    arg_file = context.launch_configurations.get('file', '')
+    if arg_file:
+        file_config = load_config_from_custom_file(arg_file)
+        config = deep_merge(config, file_config)
 
-    # Force user specification check
-    if mode == 'REQUIRED':
+    arg_override = context.launch_configurations.get('override', '')
+    if arg_override:
+        try:
+            overlay = yaml.safe_load(arg_override)
+            if isinstance(overlay, dict):
+                config = deep_merge(config, overlay)
+        except Exception:
+            from launch.substitutions import SubstitutionFailure
+            raise SubstitutionFailure(
+f"""\033[91m
+[{PKG_NAME}] Could not parse 'override' as valid inline YAML.
+\033[0m
+"""
+            )
+
+    # If still empty, nothing was provided
+    if not config:
         from launch.substitutions import SubstitutionFailure
         raise SubstitutionFailure(
 f"""\033[91m
-[{PKG_NAME}] You must specifiy a launch mode. See Readme for more info or try again like this for a webcam-demo:
+[{PKG_NAME}] No configuration provided. Use one of:
     ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+    ros2 launch nit_aprilcube detect.launch.py file:=/path/to/config.yaml
+    ros2 launch nit_aprilcube detect.launch.py mode:=webcam override:="usb_cam: ..."
 \033[0m
 """
         )
-
-    # Try to parse mode as inline YAML first; fall back to file/keyword lookup
-    try:
-        config = yaml.safe_load(mode)
-        if not isinstance(config, dict):
-            raise ValueError
-    except Exception:
-        config = load_yaml_configuration(mode)
 
     actions = []
 
@@ -271,10 +302,20 @@ f"""\033[91m
 
 def generate_launch_description():
     return launch.LaunchDescription([
-        launch.actions.DeclareLaunchArgument(
+        DeclareLaunchArgument(
             'mode',
-            default_value='REQUIRED',
-            description='Setup mode / environment profile (REQUIRED)'
+            default_value='',
+            description='Predefined profile name (e.g. webcam, sim)'
+        ),
+        DeclareLaunchArgument(
+            'file',
+            default_value='',
+            description='Path to a custom YAML config file'
+        ),
+        DeclareLaunchArgument(
+            'override',
+            default_value='',
+            description='Inline YAML to merge on top of base config'
         ),
 
         launch.actions.OpaqueFunction(

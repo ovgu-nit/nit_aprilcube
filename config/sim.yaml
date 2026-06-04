@@ -59,8 +59,6 @@ aprilcube_detector:
     cube_side_length: 0.05
     forget_thresh_sec: 5.0
     novelty_thresh_m: 0.01
-    end_effector_link: gripper_grasping_frame
-    planning_group: arm_torso
     publish_pose_enabled: true
 
 rviz:
