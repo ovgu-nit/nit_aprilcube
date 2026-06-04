@@ -60,22 +60,22 @@ Any combination of these can be used — `mode`/`file` establishes the base conf
 
 ```bash
 # Predefined profile
-ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+ros2 launch nit_aprilcube launch.py mode:=webcam
 
 # Custom file
-ros2 launch nit_aprilcube detect.launch.py file:=/path/to/my_config.yaml
+ros2 launch nit_aprilcube launch.py file:=/path/to/my_config.yaml
 
 # Override a single key from a profile
-ros2 launch nit_aprilcube detect.launch.py mode:=webcam override:="usb_cam: {parameters: {camera_ns: /custom}}"
+ros2 launch nit_aprilcube launch.py mode:=webcam override:="usb_cam: {parameters: {camera_ns: /custom}}"
 
 # Standalone override (no base)
-ros2 launch nit_aprilcube detect.launch.py override:="apriltag: {parameters: {...}}"
+ros2 launch nit_aprilcube launch.py override:="apriltag: {parameters: {...}}"
 ```
 
 ### Webcam-Demo
 To launch a webcam demo of the tag detection (e.g. to verify the installation worked) run the following command. You need an aprilcube, to test this (see print2d or print3D). 
 ```bash
-ros2 launch nit_aprilcube detect.launch.py mode:=webcam
+ros2 launch nit_aprilcube launch.py mode:=webcam
 ```
 
 ### Simulation
@@ -110,7 +110,7 @@ source install/setup.bash
 
 Launch the simulation:
 ```bash
-ros2 launch nit_aprilcube detect.launch.py mode:=sim
+ros2 launch nit_aprilcube launch.py mode:=sim
 ```
 - This launches the Gazebo simulator from PAL Robotics with Tiago in a tabletop scene. The default aruco cube gets replaced by the aprilcube. 
 - Rviz will open with panels showing the annotated camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table).
@@ -149,7 +149,7 @@ source install/setup.bash
 
 Launch the deploy script with remote-configurations:
 ```bash
-ros2 launch nit_aprilcube detect.launch.py mode:=remote
+ros2 launch nit_aprilcube launch.py mode:=remote
 ```
 - Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
 - The head_follower node will follow the cube.
@@ -193,7 +193,7 @@ source install/setup.bash
 
 Launch the deploy script with remote-configurations:
 ```bash
-ros2 launch nit_aprilcube detect.launch.py mode:=robot
+ros2 launch nit_aprilcube launch.py mode:=robot
 ```
 - Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
 - The head_follower node will follow the cube.
@@ -245,7 +245,7 @@ ssh pal@tiago
 ```
 ```bash
 source /home/pal/deployed_ws/local_setup.bash
-ros2 launch nit_aprilcube detect.launch.py mode:=robot
+ros2 launch nit_aprilcube launch.py mode:=robot
 ```
 **Done!**
 
@@ -272,25 +272,25 @@ Each mode is defined by a YAML file in `config/setup_<mode>.yaml` — the single
 
 ```bash
 # Simulation
-ros2 launch nit_aprilcube detect.launch.py mode:=sim
+ros2 launch nit_aprilcube launch.py mode:=sim
 
 # On robot (CPU-efficient, no GUI overhead)
-ros2 launch nit_aprilcube detect.launch.py mode:=robot
+ros2 launch nit_aprilcube launch.py mode:=robot
 
 # Remote PC (receive compressed stream, annotate, visualize)
-ros2 launch nit_aprilcube detect.launch.py mode:=remote
+ros2 launch nit_aprilcube launch.py mode:=remote
 ```
 
 Optional overrides:
 ```bash
 # Custom image topic
-ros2 launch nit_aprilcube detect.launch.py mode:=robot image_raw:=/my/camera/image
+ros2 launch nit_aprilcube launch.py mode:=robot image_raw:=/my/camera/image
 
 # Enable debug printer
-ros2 launch nit_aprilcube detect.launch.py mode:=sim use_tag_printer:=true
+ros2 launch nit_aprilcube launch.py mode:=sim use_tag_printer:=true
 
 # Delay cube spawn (sim only)
-ros2 launch nit_aprilcube detect.launch.py mode:=sim spawn_delay_sec:=2.0
+ros2 launch nit_aprilcube launch.py mode:=sim spawn_delay_sec:=2.0
 ```
 
 To add a new mode, create `config/setup_<name>.yaml` and launch with `mode:=<name>` — no code changes.
@@ -306,7 +306,7 @@ nit_aprilcube_dir = get_package_share_directory('nit_aprilcube')
 
 IncludeLaunchDescription(
     PythonLaunchDescriptionSource(
-        os.path.join(nit_aprilcube_dir, 'launch', 'detect.launch.py')
+        os.path.join(nit_aprilcube_dir, 'launch', 'launch.py')
     ),
     launch_arguments={'mode': 'sim', 'x': '0.7'}.items()
 )

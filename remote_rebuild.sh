@@ -38,4 +38,4 @@ PYTHONWARNINGS="ignore" REMOTE_INSTALL=true colcon build --symlink-install \
   --cmake-args -DCMAKE_POLICY_VERSION_MINIMUM=3.10 -Wno-dev
 
 echo ""
-echo "Reuild complete."
+echo "Rebuild complete."

@@ -95,9 +95,9 @@ f"""\033[91m
         raise SubstitutionFailure(
 f"""\033[91m
 [{PKG_NAME}] No configuration provided. Use one of:
-    ros2 launch nit_aprilcube detect.launch.py mode:=webcam
-    ros2 launch nit_aprilcube detect.launch.py file:=/path/to/config.yaml
-    ros2 launch nit_aprilcube detect.launch.py mode:=webcam override:="usb_cam: ..."
+    ros2 launch nit_aprilcube launch.py mode:=webcam
+    ros2 launch nit_aprilcube launch.py file:=/path/to/config.yaml
+    ros2 launch nit_aprilcube launch.py mode:=webcam override:="usb_cam: ..."
 \033[0m
 """
         )
