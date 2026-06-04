@@ -10,22 +10,17 @@ apriltag:
       ids: [0,1,2,3,4,5]
       frames: [tag0_top,tag1_front,tag2_left,tag3_right,tag4_back,tag5_bottom]
 
-image_annotator:
+head_follower:
   remappings:
-    image_raw: /head_front_camera/rgb/image_raw
-
-# head_follower:
-#   remappings:
-#     joint_trajectory: /head_controller/joint_trajectory
-#     camera_info: /head_front_camera/rgb/camera_info
-#   parameters:
-#     timer_period_sec: 0.1
-#     pan_joint_name: head_1_joint
-#     tilt_joint_name: head_2_joint
-#     control_gain: 0.001
-#     smoothing_factor: 0.3
-
+    joint_trajectory: /head_controller/joint_trajectory
+    camera_info: /head_front_camera/rgb/camera_info
+  parameters:
+    timer_period_sec: 0.1
+    pan_joint_name: head_1_joint
+    tilt_joint_name: head_2_joint
+    control_gain: 0.001
+    smoothing_factor: 0.33 # Freddy's magic number
 
 rviz:
   launch_delay_sec: 2.0
-  config_file: sim.rviz
+  config_file: remote.rviz

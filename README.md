@@ -63,7 +63,6 @@ sudo apt-get update; sudo apt-get install git python3-vcstool python3-rosdep pyt
 mkdir -p ~/tiago_public_ws/src; cd ~/tiago_public_ws
 vcs import --input https://raw.githubusercontent.com/pal-robotics/tiago_tutorials/humble-devel/tiago_public.repos src
 sudo rosdep init; rosdep update
-rosdep install --from-paths src -y --ignore-src
 ```
 
 Clone this package into the workspace:
@@ -94,6 +93,141 @@ ros2 launch nit_aprilcube detect.launch.py mode:=sim
 - The demo starts a "tuck arm"-movement. Sometimes this causes problems in the simulation. In that case just relaunch the demo.
 - The head_follower node will follow the cube.
 
+
+### Remote PC with real TIAGo
+
+This setup is intended for running the aprilcube functionality from a remote PC (like nit-lab) but for the real robot (no simulation). 
+
+Set up a new testing workspace if necessary:
+```bash
+mkdir -p ~/nit_test_ws/src; cd ~/nit_test_ws
+sudo rosdep init; rosdep update
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd nit_aprilcube
+git checkout 4-test-aprilcube-detection-in-real-deployment-on-tiago
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ../.. # back to nit_test_ws
+bash src/nit_aprilcube/remote_install.sh
+source install/setup.bash
+```
+
+Launch the deploy script with remote-configurations:
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=remote
+```
+- Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
+- The head_follower node will follow the cube.
+
+
+
+### Tiago-Jetson
+
+This setup is similar to the remote setup except that no RVIz is launched and the raw camera images is used to find apriltags, as opposed to the the compressed image transport.
+
+Set up a new testing workspace if necessary:
+```bash
+ssh tiago@tiago-jetson
+```
+
+Set up a new testing workspace if necessary:
+```bash
+mkdir -p ~/nit_test_ws/src; cd ~/nit_test_ws
+sudo rosdep init; rosdep update
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd nit_aprilcube
+git checkout 4-test-aprilcube-detection-in-real-deployment-on-tiago
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ../.. # back to nit_test_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install --allow-overriding nit_aprilcube --cmake-args --no-warn-unused-cli -Wno-dev
+source install/setup.bash
+```
+
+Launch the deploy script with remote-configurations:
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=robot
+```
+- Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
+- The head_follower node will follow the cube.
+
+
+### Depoly on Tiago with pal_deploy
+
+This setup uses the same configuration mode as on tiago-jetson (mode:=robot). But to deploy, PAL requires a specific deployment process. I'm assuming you are running this on a remote PC that can communitcate with tiago (e.g., nit-lab):
+
+Set up a new testing workspace if necessary:
+```bash
+mkdir -p ~/nit_test_ws/src; cd ~/nit_test_ws
+sudo rosdep init; rosdep update
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd nit_aprilcube
+git checkout 4-test-aprilcube-detection-in-real-deployment-on-tiago
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ../.. # back to nit_test_ws
+rosdep install --from-paths src --ignore-src -r -y
+```
+
+Now the PAL specific deployment process starts (https://docs.pal-robotics.com/edge/development/deploy-code). In your workspace root make a clean environment:
+```bash
+env -i bash --norc
+```
+
+Source the PAL robotics underlay and run the deployment:
+```bash
+source /opt/ros/humble/setup.bash
+source /opt/pal/alum/local_setup.bash
+ros2 run pal_deploy deploy -p nit_aprilcube tiago
+```
+
+The script copies all the install files from your package into the on-board deployed_ws. In a new terminal, SSH into tiago:
+```bash
+ssh pal@tiago
+```
+```bash
+source /home/pal/deployed_ws/local_setup.bash
+ros2 launch nit_aprilcube detect.launch.py mode:=robot
+```
+**Done!**
+
+To re-deploy the workspace cleanly, delete the package folder on Tiago:
+
+rm -rf /home/pal/deployed_wsnit_aprilcube/
 
 ----
 # Old stuff
