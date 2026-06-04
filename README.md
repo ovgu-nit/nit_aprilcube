@@ -94,8 +94,9 @@ ros2 launch nit_aprilcube detect.launch.py mode:=sim
 - The head_follower node will follow the cube.
 
 
-### Remotely on real TIAGo
+### Remote PC with real TIAGo
 
+This setup is intended for running the aprilcube functionality from a remote PC (like nit-lab) but for the real robot (no simulation). 
 
 Set up a new testing workspace if necessary:
 ```bash
@@ -129,6 +130,49 @@ ros2 launch nit_aprilcube detect.launch.py mode:=remote
 - Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
 - The head_follower node will follow the cube.
 
+
+
+### Tiago-Jetson
+
+This setup is similar to the remote setup except that no RVIz is launched and the raw camera images is used to find apriltags, as opposed to the the compressed image transport.
+
+Set up a new testing workspace if necessary:
+```bash
+ssh tiago@tiago-jetson
+```
+
+Set up a new testing workspace if necessary:
+```bash
+mkdir -p ~/nit_test_ws/src; cd ~/nit_test_ws
+sudo rosdep init; rosdep update
+```
+
+Clone this package into the workspace:
+```bash
+cd src
+git clone git@github.com:ovgu-nit/nit_aprilcube.git
+```
+
+(if not on `humble-devel`, checkout the correct branch)
+```bash
+cd nit_aprilcube
+git checkout 4-test-aprilcube-detection-in-real-deployment-on-tiago
+```
+
+Then run the install script from the workspace root:
+```bash
+cd ../.. # back to nit_test_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build --symlink-install --allow-overriding nit_aprilcube --cmake-args --no-warn-unused-cli -Wno-dev
+source install/setup.bash
+```
+
+Launch the deploy script with remote-configurations:
+```bash
+ros2 launch nit_aprilcube detect.launch.py mode:=robot
+```
+- Rviz will open with panels showing the camera image, a view port with the TIAGo model and the planning scene objects (april cube and a pseudo box representing the table). No image annotation as it is an unecessary overhead.
+- The head_follower node will follow the cube.
 
 ----
 # Old stuff
