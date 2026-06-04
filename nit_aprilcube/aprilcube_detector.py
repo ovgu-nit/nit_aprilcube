@@ -30,6 +30,7 @@ class AprilcubeDetector(Node):
                 ('novelty_thresh_m', 0.01), # update sensitivity, if cube pose change more than this, the pose updates
                 ('publish_pose_enabled', False), # if set, new cube poses are published as a topic
                 ('apply_planning_scene_enable', True), # if set, collision objects for cube and table are added and remove for the planning scene for moveit
+                ('distance_to_pseudo_table_m', 0.35) # distance of table to robot base frame in the xy-plane, the table will be rotated orthogonally to the camera gaze direction
             ]
         )
         # self.use_sim_time = self.get_parameter('use_sim_time').value
@@ -40,6 +41,7 @@ class AprilcubeDetector(Node):
         self.novelty_thresh_m = self.get_parameter('novelty_thresh_m').value
         self.publish_pose_enabled = self.get_parameter('publish_pose_enabled').value
         self.apply_planning_scene_enable = self.get_parameter('apply_planning_scene_enable').value
+        self.distance_to_pseudo_table_m = self.get_parameter('distance_to_pseudo_table_m').value
 
         # --- ROS setup ---
         self.timer = self.create_timer(
@@ -86,7 +88,6 @@ class AprilcubeDetector(Node):
         # --- State ---
         self.cube_pose = None
         self.t_found = self.get_clock().now()
-        self.dist_to_table = 0.35
 
         self.get_logger().info('Aprilcube Detector initialized.')
 
@@ -186,7 +187,7 @@ class AprilcubeDetector(Node):
         else:
             cube_dir = cube_xy / cube_r
 
-        table_center_distance = self.dist_to_table + table_depth / 2.0
+        table_center_distance = self.distance_to_pseudo_table_m + table_depth / 2.0
         table_pose = geometry_msgs.msg.Pose()
         table_pose.position.x = float(cube_dir[0] * table_center_distance)
         table_pose.position.y = float(cube_dir[1] * table_center_distance)

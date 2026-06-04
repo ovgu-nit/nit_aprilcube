@@ -95,9 +95,9 @@ f"""\033[91m
         raise SubstitutionFailure(
 f"""\033[91m
 [{PKG_NAME}] No configuration provided. Use one of:
-    ros2 launch nit_aprilcube launch.py mode:=webcam
-    ros2 launch nit_aprilcube launch.py file:=/path/to/config.yaml
-    ros2 launch nit_aprilcube launch.py mode:=webcam override:="usb_cam: ..."
+    ros2 launch nit_aprilcube aprilcube.launch.py mode:=webcam
+    ros2 launch nit_aprilcube aprilcube.launch.py file:=/path/to/config.yaml
+    ros2 launch nit_aprilcube aprilcube.launch.py mode:=webcam override:="usb_cam: ..."
 \033[0m
 """
         )
@@ -229,14 +229,35 @@ f"""\033[91m
 
     if 'rviz' in config:
         launch_delay_sec = config['rviz'].get('launch_delay_sec', 0.0)
-        config_file = PKG_PATH / 'config' / config['rviz']['config_file']
+
+        # Try to find specified rviz file
+        rviz_file = ""
+        rviz_path_package = PKG_PATH / 'config' / config['rviz']['config_file']
+        rviz_path_cwd = Path.cwd() / config['rviz']['config_file']
+        rviz_path_global = Path(config['rviz']['config_file'])
+        if rviz_path_package.exists():
+            rviz_file = str(rviz_path_package)
+        elif rviz_path_cwd.exists():
+            rviz_file = str(rviz_path_cwd)
+        elif rviz_path_global.exists():
+            rviz_file = str(rviz_path_global)
+        else:
+            raise FileNotFoundError(
+f"""\033[91m
+[{PKG_NAME}] Could not find RViz file: {config['rviz']['config_file']}. Looked at:
+    - {rviz_path_package}
+    - {rviz_path_cwd}
+    - {rviz_path_global}
+\033[0m
+"""
+            )
 
         actions.append(
             launch.actions.TimerAction(
                 period=float(launch_delay_sec),
                 actions=[
                     launch.actions.ExecuteProcess(
-                        cmd=['rviz2', '-d', str(config_file)],
+                        cmd=['rviz2', '-d', str(rviz_file)],
                         output='screen'
                     ),
                 ]
