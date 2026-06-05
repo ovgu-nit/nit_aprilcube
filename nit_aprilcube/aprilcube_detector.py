@@ -96,7 +96,7 @@ class AprilcubeDetector(Node):
     def perceive(self):
         t_now = self.get_clock().now()
         new_poses = self._cube_pose_candidates()
-        self.get_logger().info(f'{len(new_poses) = }')
+        # self.get_logger().info(f'{len(new_poses) = }')
 
         if len(new_poses) == 0:
             if self.cube_pose is None:

@@ -21,3 +21,8 @@ head_follower:
     control_gain: 0.002
     smoothing_factor: 0.33 # Freddy's magic number
 
+
+aprilcube_detector:
+  parameters:
+    timer_period_sec: 0.5
+    publish_pose_enabled: true
