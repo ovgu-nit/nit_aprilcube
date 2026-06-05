@@ -305,6 +305,18 @@ class AprilcubeDetector(Node):
         xyzA = np.array([poseA.position.x, poseA.position.y, poseA.position.z])
         xyzB = np.array([poseB.position.x, poseB.position.y, poseB.position.z])
         return np.linalg.norm(xyzA - xyzB)
+    
+    def destroy_node(self):
+        # Only try to communicate if the ROS context is still actively running
+        if rclpy.ok() and self.apply_planning_scene_enable:
+            try:
+                self.forget_cube()
+            except Exception as e:
+                self.get_logger().warn(f"Could not clear planning scene during shutdown: {e}")
+        else:
+            self.get_logger().info("ROS context is shut down; skipping planning scene cleanup.")
+            
+        super().destroy_node()
 
 
 def main(args=None):
